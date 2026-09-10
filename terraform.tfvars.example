@@ -1,0 +1,5 @@
+# Copy this file to terraform.tfvars and fill in your values
+# Or set these as environment variables prefixed with TF_VAR_
+
+aiven_project = "your-aiven-project-name"
+# aiven_api_token = "your-aiven-api-token"  # Alternatively, set AVN_API_TOKEN environment variable
