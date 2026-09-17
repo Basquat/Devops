@@ -70,7 +70,7 @@ def dashboard():
         series_data[key] = fetch_bcb_data(info['id'], last_n=30)
         series_data[key]['info'] = info
 
-    return render_template('dashboard.html', series_data=series_data)
+    return render_template('dashboard.html', series_data=series_data, now=datetime.now())
 
 @app.route('/db-test')
 def db_test():
