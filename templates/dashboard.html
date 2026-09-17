@@ -126,7 +126,7 @@
                             beginAtZero: false,
                             ticks: {
                                 callback: function(value) {
-                                    return value.toFixed(2) + '{{ data.info.format|lower == "percent" ? "%" : data.info.format|lower == "currency" ? " R$" : "" }}';
+                                    return value.toFixed(2) + '{{ "%" if data.info.format|lower == "percent" else (" R$" if data.info.format|lower == "currency" else "") }}';
                                 }
                             }
                         },
