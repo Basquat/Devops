@@ -1,0 +1,17 @@
+.git
+.gitignore
+.github
+.idea
+.venv
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.env
+.env.example
+terraform.tfvars.example
+main.tf
+variables.tf
+render.yaml
+Dockerfile
+.dockerignore
