@@ -1,24 +1,54 @@
-from flask import Flask
+from flask import Flask, render_template
 import os
 import psycopg2
 from psycopg2.extras import RealDictCursor
+import requests
+from datetime import datetime
 
 app = Flask(__name__)
 
+# Banco Central SGS API configuration
+BCB_API_BASE = "https://api.bcb.gov.br/dados/serie"
+
+# Common economic indicators series IDs
+SERIES = {
+    'usd_brl': {'id': '1', 'name': 'USD/BRL Exchange Rate', 'format': 'currency'},
+    'selic': {'id': '432', 'name': 'Selic Rate', 'format': 'percent'},
+    'ipca': {'id': '433', 'name': 'IPCA Inflation', 'format': 'percent'},
+    'cdi': {'id': '12', 'name': 'CDI Rate', 'format': 'percent'}
+}
+
+def fetch_bcb_data(series_id, last_n=30):
+    """Fetch data from Banco Central SGS API"""
+    try:
+        url = f"{BCB_API_BASE}/bcdata.sgs.{series_id}/dados/ultimos/{last_n}?formato=json"
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+        data = response.json()
+
+        # Convert to format suitable for charts
+        labels = []
+        values = []
+        for item in reversed(data):  # Reverse to show oldest first
+            labels.append(item['data'])
+            values.append(float(item['valor']))
+
+        return {'labels': labels, 'values': values, 'error': None}
+    except Exception as e:
+        return {'labels': [], 'values': [], 'error': str(e)}
+
 # Database configuration from environment variables
-# ALL of these MUST be set in your environment - no defaults provided for security
 DB_CONFIG = {
     'host': os.environ.get('DB_HOST'),
-    'port': int(os.environ.get('DB_PORT', 27506)),  # Port can have default as it's not secret
+    'port': int(os.environ.get('DB_PORT', 27506)),
     'database': os.environ.get('DB_NAME'),
     'user': os.environ.get('DB_USER'),
-    'password': os.environ.get('DB_PASSWORD'),  # MUST be set - no default for security
+    'password': os.environ.get('DB_PASSWORD'),
     'sslmode': os.environ.get('DB_SSLMODE', 'require')
 }
 
 def get_db_connection():
     """Establish database connection"""
-    # Check that required settings are present
     required_settings = ['DB_HOST', 'DB_NAME', 'DB_USER', 'DB_PASSWORD']
     missing = [setting for setting in required_settings if not os.environ.get(setting)]
 
@@ -33,27 +63,14 @@ def get_db_connection():
         return None
 
 @app.route('/')
-def hello():
-    # Only show non-sensitive config info
-    safe_config = {
-        'host': DB_CONFIG['host'] or 'Not set',
-        'port': DB_CONFIG['port'],
-        'database': DB_CONFIG['database'] or 'Not set',
-        'user': DB_CONFIG['user'] or 'Not set'
-    }
+def dashboard():
+    # Fetch data for all series
+    series_data = {}
+    for key, info in SERIES.items():
+        series_data[key] = fetch_bcb_data(info['id'], last_n=30)
+        series_data[key]['info'] = info
 
-    return '''
-    <h1>Flask App PostgreSQL Configuration</h1>
-    <p>This application connects to PostgreSQL using environment variables:</p>
-    <ul>
-        <li>Host: {host}</li>
-        <li>Port: {port}</li>
-        <li>Database: {database}</li>
-        <li>User: {user}</li>
-    </ul>
-    <p><em>Password and SSL mode are set from environment variables (not shown for security)</em></p>
-    <p><em>Note: Make sure to set DB_HOST, DB_NAME, DB_USER, and DB_PASSWORD environment variables.</em></p>
-    '''.format(**safe_config)
+    return render_template('dashboard.html', series_data=series_data)
 
 @app.route('/db-test')
 def db_test():
@@ -79,6 +96,5 @@ def db_test():
         return f'<h1>Unexpected Error</h1><p>{str(e)}</p>', 500
 
 if __name__ == '__main__':
-    # Get port from environment variable or default to 5000
     port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port, debug=False)  # Debug off for production safety
+    app.run(host='0.0.0.0', port=port, debug=False)
