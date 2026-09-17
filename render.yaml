@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: devops-flask-app
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python app.py
+    envVars:
+      - key: DB_HOST
+        description: Hostname from Aiven PostgreSQL service (from Terraform output)
+      - key: DB_PORT
+        description: Port from Aiven PostgreSQL service (from Terraform output)
+      - key: DB_NAME
+        description: Database name from Aiven PostgreSQL service (from Terraform output)
+      - key: DB_USER
+        description: Username from Aiven PostgreSQL service (from Terraform output)
+      - key: DB_PASSWORD
+        description: Password for Aiven PostgreSQL user (get from Aiven console, not in Terraform output)
+        isSecret: true
+      - key: DB_SSLMODE
+        value: require

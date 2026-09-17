@@ -1,0 +1,59 @@
+# Environment variables
+# .env and .env.local are intentionally NOT ignored for this college project
+# In production environments, you would uncomment the lines below to protect secrets
+# .env
+# .env.local
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.backup
+
+# IDE
+.idea/
+*.swp
+*~
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+*.cover
+*.log
+*.log.*
+.env.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Logs
+logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Vercel
+.vercel
+
+# Others
+*.seed
+pip-log.txt
+pip-delete-this-directory.txt
+.htmlcoverage
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.cover.*
+.hypothesis/
+.pytest_cache/
